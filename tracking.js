@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'websiteTrackingEvents';
+const REDIRECT_STORAGE_KEY = 'redirectLandingVisits';
 const MAX_EVENTS = 200;
 
 function getStoredEvents() {
@@ -7,6 +8,26 @@ function getStoredEvents() {
   } catch (error) {
     return [];
   }
+}
+
+function getRedirectLandingStats() {
+  try {
+    return JSON.parse(localStorage.getItem(REDIRECT_STORAGE_KEY) || '{}');
+  } catch (error) {
+    return {};
+  }
+}
+
+function recordLandingVisit(pageName, source = 'direct') {
+  const stats = getRedirectLandingStats();
+  const currentPage = pageName || 'redirect-test';
+  const currentSource = source || 'direct';
+
+  stats[currentPage] = stats[currentPage] || { total: 0, sources: {} };
+  stats[currentPage].total += 1;
+  stats[currentPage].sources[currentSource] = (stats[currentPage].sources[currentSource] || 0) + 1;
+
+  localStorage.setItem(REDIRECT_STORAGE_KEY, JSON.stringify(stats));
 }
 
 function trackEvent(eventName, payload = {}) {
@@ -23,6 +44,9 @@ function trackEvent(eventName, payload = {}) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(events.slice(-MAX_EVENTS)));
   console.log('[website tracking]', eventData);
 }
+
+window.trackEvent = trackEvent;
+window.recordLandingVisit = recordLandingVisit;
 
 function bindClickTracking() {
   document.querySelectorAll('[data-track]').forEach((element) => {
@@ -155,8 +179,17 @@ function bindExitTracking() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const currentPath = window.location.pathname;
+  const isRedirectPage = currentPath.endsWith('/redirect-test.html') || currentPath.endsWith('redirect-test.html');
+
+  if (isRedirectPage) {
+    const source = new URLSearchParams(window.location.search).get('source') || 'direct';
+    recordLandingVisit('redirect-test', source);
+  }
+
   trackEvent('page_view', {
     title: document.title,
+    source: new URLSearchParams(window.location.search).get('source') || 'direct',
   });
 
   bindClickTracking();

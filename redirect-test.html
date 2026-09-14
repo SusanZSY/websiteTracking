@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirect Test Page</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main style="background: #f6f4ef; min-height: 100vh; padding: 2rem 1rem 4rem;">
+      <div class="container" style="max-width: 1100px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+          <p class="eyebrow dark">Landing page test</p>
+          <h1 style="font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 1rem;">This is the redirect destination</h1>
+          <p style="font-size: 1.1rem; color: #4f5d75; margin-bottom: 2rem; max-width: 700px; margin-inline: auto;">
+            This page tracks a landing visit and stores the count in localStorage.
+          </p>
+          <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <a href="index.html" class="primary-btn">Back to Home</a>
+            <button class="secondary-btn" onclick="window.location.href='index.html'">Go home</button>
+          </div>
+        </div>
+
+        <div id="landingSummary" style="margin: 0 auto 2.5rem; max-width: 700px; background: white; padding: 1rem 1.2rem; border-radius: 14px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); text-align: center;">
+          Loading landing stats...
+        </div>
+
+        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+          <article class="profile-card" style="padding: 1.25rem; border-radius: 18px; background: white; box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);">
+            <div class="profile-photo photo-one" style="height: 180px; border-radius: 14px; margin-bottom: 1rem;"></div>
+            <div class="profile-info">
+              <h3>Dr. Maya Chen</h3>
+              <p>Clinical Psychologist</p>
+              <p style="color: #4f5d75; margin: 0.5rem 0 1rem;">Specializes in anxiety, burnout, and life transitions.</p>
+              <button class="primary-btn book-appointment" data-therapist="Dr. Maya Chen" data-track="book_appointment" type="button">Book appointment</button>
+            </div>
+          </article>
+
+          <article class="profile-card" style="padding: 1.25rem; border-radius: 18px; background: white; box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);">
+            <div class="profile-photo photo-two" style="height: 180px; border-radius: 14px; margin-bottom: 1rem;"></div>
+            <div class="profile-info">
+              <h3>Jordan Alvarez</h3>
+              <p>Licensed Therapist</p>
+              <p style="color: #4f5d75; margin: 0.5rem 0 1rem;">Supports stress, relationship challenges, and emotional resilience.</p>
+              <button class="primary-btn book-appointment" data-therapist="Jordan Alvarez" data-track="book_appointment" type="button">Book appointment</button>
+            </div>
+          </article>
+
+          <article class="profile-card" style="padding: 1.25rem; border-radius: 18px; background: white; box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);">
+            <div class="profile-photo photo-three" style="height: 180px; border-radius: 14px; margin-bottom: 1rem;"></div>
+            <div class="profile-info">
+              <h3>Priya Shah</h3>
+              <p>Therapist & Coach</p>
+              <p style="color: #4f5d75; margin: 0.5rem 0 1rem;">Helps with confidence, boundaries, and personal growth.</p>
+              <button class="primary-btn book-appointment" data-therapist="Priya Shah" data-track="book_appointment" type="button">Book appointment</button>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <script src="tracking.js"></script>
+    <script>
+      function renderLandingStats() {
+        const data = JSON.parse(localStorage.getItem('redirectLandingVisits') || '{}');
+        const entry = data['redirect-test'];
+
+        const summary = document.getElementById('landingSummary');
+        if (!summary) return;
+
+        if (!entry) {
+          summary.textContent = 'No landing visits recorded yet.';
+          return;
+        }
+
+        const sourceList = Object.entries(entry.sources || {})
+          .map(([source, count]) => `${source}: ${count}`)
+          .join(' | ');
+
+        summary.innerHTML = `
+          <strong>Total visits:</strong> ${entry.total}<br>
+          <strong>By source:</strong> ${sourceList || 'direct: 0'}
+        `;
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        renderLandingStats();
+
+        document.querySelectorAll('.book-appointment').forEach((button) => {
+          button.addEventListener('click', () => {
+            const therapist = button.dataset.therapist || 'Unknown therapist';
+            const source = new URLSearchParams(window.location.search).get('source') || 'direct';
+
+            window.localStorage.setItem(
+              'lastBookedTherapist', JSON.stringify({ therapist, source, timestamp: new Date().toISOString() })
+            );
+
+            trackEvent('book_appointment', {
+              therapist,
+              source,
+              page: 'redirect-test.html',
+            });
+
+            button.textContent = 'Booked';
+            button.disabled = true;
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

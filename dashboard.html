@@ -148,6 +148,46 @@
         font-weight: 700;
       }
 
+      .chart-panel {
+        margin-top: 22px;
+      }
+
+      .chart-wrap {
+        display: flex;
+        align-items: end;
+        gap: 14px;
+        height: 220px;
+        padding-top: 18px;
+      }
+
+      .bar-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        align-items: center;
+        gap: 10px;
+        min-width: 90px;
+      }
+
+      .bar {
+        width: 100%;
+        max-width: 110px;
+        border-radius: 12px 12px 0 0;
+        background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+        min-height: 12px;
+      }
+
+      .bar.alt {
+        background: linear-gradient(180deg, var(--success) 0%, #1d8177 100%);
+      }
+
+      .bar-label {
+        font-size: 0.8rem;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
       @media (max-width: 860px) {
         .stats-grid,
         .layout {
@@ -196,10 +236,18 @@
           </div>
         </div>
       </section>
+
+      <section class="panel chart-panel">
+        <div class="panel-header">Landing vs Bookings</div>
+        <div class="panel-body">
+          <div id="chartWrap" class="chart-wrap"></div>
+        </div>
+      </section>
     </div>
 
     <script>
       const STORAGE_KEY = 'websiteTrackingEvents';
+      const REDIRECT_STORAGE_KEY = 'redirectLandingVisits';
 
       function getEvents() {
         try {
@@ -209,13 +257,24 @@
         }
       }
 
+      function getRedirectLandingStats() {
+        try {
+          return JSON.parse(localStorage.getItem(REDIRECT_STORAGE_KEY) || '{}');
+        } catch (error) {
+          return {};
+        }
+      }
+
       function renderDashboard() {
         const events = getEvents();
+        const redirectStats = getRedirectLandingStats();
 
         const totalEvents = events.length;
         const pageViews = events.filter((event) => event.eventName === 'page_view').length;
         const clicks = events.filter((event) => event.eventName === 'cta_click').length;
         const formSubmits = events.filter((event) => event.eventName === 'form_submit').length;
+        const bookedAppointments = events.filter((event) => event.eventName === 'book_appointment').length;
+        const redirectVisits = Object.values(redirectStats).reduce((sum, item) => sum + (item.total || 0), 0);
 
         const statsGrid = document.getElementById('statsGrid');
         statsGrid.innerHTML = `
@@ -235,6 +294,14 @@
             <span class="stat-label">Form submits</span>
             <div class="stat-value">${formSubmits}</div>
           </div>
+          <div class="stat-card">
+            <span class="stat-label">Booked</span>
+            <div class="stat-value">${bookedAppointments}</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Redirect visits</span>
+            <div class="stat-value">${redirectVisits}</div>
+          </div>
         `;
 
         const eventTableBody = document.getElementById('eventTableBody');
@@ -252,10 +319,38 @@
         }, {});
 
         const eventTotals = document.getElementById('eventTotals');
-        eventTotals.innerHTML = Object.entries(totals)
-          .sort((a, b) => b[1] - a[1])
-          .map(([name, count]) => `<span class="chip">${name}: ${count}</span>`)
-          .join('');
+        const redirectSources = Object.entries(redirectStats).reduce((acc, [page, pageData]) => {
+          Object.entries(pageData.sources || {}).forEach(([source, count]) => {
+            acc[source] = (acc[source] || 0) + count;
+          });
+          return acc;
+        }, {});
+
+        const summaryChips = [
+          ...Object.entries(totals)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, count]) => `<span class="chip">${name}: ${count}</span>`),
+          ...Object.entries(redirectSources)
+            .map(([source, count]) => `<span class="chip">redirect:${source}: ${count}</span>`)
+        ];
+
+        eventTotals.innerHTML = summaryChips.join('');
+
+        const chartWrap = document.getElementById('chartWrap');
+        const maxValue = Math.max(1, redirectVisits, bookedAppointments);
+
+        chartWrap.innerHTML = `
+          <div class="bar-group">
+            <div class="bar" style="height: ${(redirectVisits / maxValue) * 100}%"></div>
+            <div class="bar-label">Redirects</div>
+            <div class="bar-label">${redirectVisits}</div>
+          </div>
+          <div class="bar-group">
+            <div class="bar alt" style="height: ${(bookedAppointments / maxValue) * 100}%"></div>
+            <div class="bar-label">Bookings</div>
+            <div class="bar-label">${bookedAppointments}</div>
+          </div>
+        `;
       }
 
       renderDashboard();
