@@ -1,47 +1,17 @@
 # TMatch Tracking Demo
 
-## Website 1: Main marketing website
-This is the sample TMatch landing page for the client-facing therapy matching experience.
-
-It includes:
-- hero section and CTA buttons
-- therapist match overview
-- sections for how it works, why TMatch, and FAQ
-- links to test redirect flows
-
-This site tracks user behavior such as:
-- page views
-- CTA clicks
-- section views
-- source values
-- scroll depth
-- outbound clicks
-- time on site
-- mouse movement and hover activity
-
-## Website 2: Redirect test page
-This is the landing page used to test visitor flow after clicking from the main site.
-
-It includes:
-- redirect landing tracking
-- therapist profile cards
-- Book appointment buttons
-- source-based visitor tracking
-
-This page tracks:
-- landing visits
-- source of the visit
-- booking clicks by therapist
-- booking count by source
-- user activity on the redirected landing page
+## Website links
+- Main website: https://susanzsy.github.io/websiteTracking/website/
+- Redirect test page: https://susanzsy.github.io/websiteTracking/website/redirect-test.html
+- Dashboard: https://susanzsy.github.io/websiteTracking/dashboard/
 
 ## What we can track
 This is a browser-side tracking demo, so we can track things like:
 
 - page views
-- clicks on buttons and links
+- button and link clicks
 - source or referrer information
-- landing-page visits from redirect flows
+- redirect landing visits
 - therapist booking clicks
 - bookings by therapist
 - clicks by source
