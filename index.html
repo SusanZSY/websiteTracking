@@ -3,265 +3,357 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TMatch | Your Personal Guide to the RIGHT Therapist</title>
-    <meta
-      name="description"
-      content="TMatch helps you find the right therapist through a guided, AI-powered matching experience."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
+    <title>TMatch Tracking Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css" />
   </head>
   <body>
-    <header class="site-header">
-      <div class="container nav-wrap">
-        <a href="#top" class="brand" data-track="brand_click">TMatch</a>
-        <nav class="main-nav" aria-label="Main navigation">
-          <a href="#meet-tracy" data-track="nav_meet_tracy">Meet Tracy</a>
-          <a href="#how-it-works" data-track="nav_how_it_works">How it works</a>
-          <a href="#why-tmatch" data-track="nav_why_tmatch">Why TMatch</a>
-          <a href="#faq" data-track="nav_faq">FAQ</a>
-        </nav>
-        <button class="primary-btn" data-track="header_cta">Get Started</button>
-      </div>
-    </header>
+    <div class="container">
+      <header class="header">
+        <div class="header-inner">
+          <h1>Tracking Dashboard</h1>
+          <button class="refresh-btn" onclick="renderDashboard()">Refresh</button>
+        </div>
+        <div class="filter-bar" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:flex-end; margin-top: 1rem;">
+          <label style="display:flex; align-items:center; gap:8px; color:#475467; font-size:0.95rem;">From<input id="dateFrom" type="date" style="padding:0.55rem 0.7rem; border-radius:10px; border:1px solid #d0d5dd; background:#fff;" /></label>
+          <label style="display:flex; align-items:center; gap:8px; color:#475467; font-size:0.95rem;">To<input id="dateTo" type="date" style="padding:0.55rem 0.7rem; border-radius:10px; border:1px solid #d0d5dd; background:#fff;" /></label>
+          <button class="refresh-btn" onclick="renderDashboard()" style="margin-left: 0.25rem;">Apply</button>
+          <button class="refresh-btn" onclick="clearDateFilter()" style="background:#eef2ff; color:#4338ca;">Clear</button>
+        </div>
+      </header>
 
-    <main id="top">
-      <section class="hero section-shell">
-        <div class="container hero-grid">
-          <div class="hero-copy">
-            <p class="eyebrow">Your Personal Guide to the RIGHT Therapist</p>
-            <h1>Talk to Tracy, AI case manager who connects you with the right care.</h1>
-            <p class="hero-subtitle">
-              Get matched with therapists who fit your needs, preferences, and goals without endless scrolling.
-            </p>
-            <div class="cta-row">
-              <button class="primary-btn" data-track="hero_primary_cta">Get Started</button>
-              <button class="secondary-btn" data-track="hero_secondary_cta">Learn more</button>
-              <a class="primary-btn" href="redirect-test.html?source=homepage" data-track="redirect_test_link">Test Redirect</a>
-            </div>
+      <section class="stats-grid" id="statsGrid"></section>
+
+      <section class="layout">
+        <div class="panel">
+          <div class="panel-header">Recent Events</div>
+          <div class="panel-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>Page</th>
+                  <th>Time</th>
+                  <th>User</th>
+                </tr>
+              </thead>
+              <tbody id="eventTableBody"></tbody>
+            </table>
           </div>
+        </div>
 
-          <div class="hero-visual" aria-label="Tracy AI case manager illustration">
-            <div class="tracy-card">
-              <div class="tracy-badge">Hi, I'm Tracy!</div>
-              <div class="tracy-avatar">
-                <div class="avatar-head"></div>
-                <div class="avatar-body"></div>
-              </div>
-              <div class="chat-bubble">
-                <span class="chat-icon">✦</span>
-                <span>Send message</span>
-              </div>
-            </div>
+        <div class="panel">
+          <div class="panel-header">Event Totals</div>
+          <div class="panel-body">
+            <div id="eventTotals" class="chip-list"></div>
           </div>
         </div>
       </section>
 
-      <section id="meet-tracy" class="section-shell section-soft" data-track-section="meet_tracy">
-        <div class="container split-layout">
-          <div class="section-copy">
-            <p class="eyebrow dark">Meet Tracy</p>
-            <h2>Your Personal Case Manager</h2>
-            <p>
-              Tracy is here to help you make sense of what you're looking for, even if you are not sure how to describe it yet.
-            </p>
-            <ul class="check-list">
-              <li>Clarify your goals, preferences, and concerns</li>
-              <li>Translate your needs into therapist-matching criteria</li>
-              <li>Narrow your options to a few therapists who genuinely fit</li>
-            </ul>
+      <section class="layout">
+        <div class="panel">
+          <div class="panel-header">Bookings by Therapist</div>
+          <div class="panel-body">
+            <div id="therapistBreakdown" class="chip-list"></div>
           </div>
+        </div>
 
-          <div class="side-panel">
-            <div class="mini-card large">
-              <div class="mini-icon">💬</div>
-              <div>
-                <strong>Personal guidance</strong>
-                <p>Not a quiz. Real, human-centered support.</p>
-              </div>
-            </div>
-            <div class="mini-card small">
-              <div class="mini-icon">✓</div>
-              <div>
-                <strong>Fewer, better matches</strong>
-              </div>
-            </div>
+        <div class="panel">
+          <div class="panel-header">Clicks by Source</div>
+          <div class="panel-body">
+            <div id="sourceBreakdown" class="chip-list"></div>
           </div>
         </div>
       </section>
 
-      <section id="how-it-works" class="section-shell" data-track-section="how_it_works">
-        <div class="container">
-          <div class="section-heading centered">
-            <p class="eyebrow dark">How it works</p>
-            <h2>3 simple steps to find the right fit.</h2>
+      <section class="layout">
+        <div class="panel">
+          <div class="panel-header">Source Conversion Rates</div>
+          <div class="panel-body">
+            <div id="sourceConversionBreakdown" class="chip-list"></div>
           </div>
+        </div>
 
-          <div class="steps-grid">
-            <article class="step-card">
-              <div class="step-icon">1</div>
-              <h3>Talk to Tracy</h3>
-              <p>Chat with Tracy to share your concerns, preferences, and what matters most to you.</p>
-            </article>
-            <article class="step-card">
-              <div class="step-icon">2</div>
-              <h3>Review your matches</h3>
-              <p>Receive a curated list of therapists who align with your needs and values.</p>
-            </article>
-            <article class="step-card">
-              <div class="step-icon">3</div>
-              <h3>Book a session</h3>
-              <p>Start your session with your chosen therapist and begin your journey with confidence.</p>
-            </article>
+        <div class="panel">
+          <div class="panel-header">Overall Conversion</div>
+          <div class="panel-body">
+            <div id="overallConversion" class="chip-list"></div>
           </div>
         </div>
       </section>
 
-      <section id="why-tmatch" class="section-shell section-soft" data-track-section="why_tmatch">
-        <div class="container">
-          <div class="section-heading centered">
-            <p class="eyebrow dark">Why TMatch?</p>
-            <h2>Thoughtful matching built around you.</h2>
+      <section class="layout">
+        <div class="panel">
+          <div class="panel-header">Mouse Movement</div>
+          <div class="panel-body">
+            <div id="mouseMovementSummary" class="chip-list"></div>
           </div>
+        </div>
 
-          <div class="feature-grid">
-            <article class="feature-card">
-              <div class="feature-icon">💳</div>
-              <h3>Accept both cash & insurance</h3>
-              <p>Tell Tracy how you prefer to pay, and match with options that fit your situation.</p>
-            </article>
-            <article class="feature-card">
-              <div class="feature-icon">🔒</div>
-              <h3>HIPAA compliant & secure</h3>
-              <p>Your information is protected with privacy-first safeguards built into the experience.</p>
-            </article>
-            <article class="feature-card">
-              <div class="feature-icon">🧠</div>
-              <h3>Personal guidance, not a quiz</h3>
-              <p>Most apps rely on forms; Tracy listens, understands, and helps you clarify what matters.</p>
-            </article>
-            <article class="feature-card">
-              <div class="feature-icon">🎯</div>
-              <h3>Fewer, better matches</h3>
-              <p>Instead of endless profiles, you get a small set of genuinely fit-for-you therapist options.</p>
-            </article>
-            <article class="feature-card">
-              <div class="feature-icon">🤍</div>
-              <h3>Human-centered matching</h3>
-              <p>We consider the nuance of your communication style, comfort, and what makes care feel safe.</p>
-            </article>
-            <article class="feature-card">
-              <div class="feature-icon">📍</div>
-              <h3>Matched on what matters</h3>
-              <p>Location, availability, insurance, culture, and preferences are all part of the fit.</p>
-            </article>
+        <div class="panel">
+          <div class="panel-header">Hover Heatmap</div>
+          <div class="panel-body">
+            <div id="hoverHeatmapSummary" class="chip-list"></div>
           </div>
         </div>
       </section>
 
-      <section class="section-shell profiles-section" data-track-section="therapist_matches">
-        <div class="container">
-          <div class="section-heading">
-            <p class="eyebrow dark">Find your therapists</p>
-            <h2>Meet professionals who may be a good fit.</h2>
-          </div>
-
-          <div class="profile-grid">
-            <article class="profile-card">
-              <div class="profile-photo photo-one"></div>
-              <div class="profile-info">
-                <h3>Brian Polis</h3>
-                <p>Therapist</p>
-              </div>
-            </article>
-            <article class="profile-card">
-              <div class="profile-photo photo-two"></div>
-              <div class="profile-info">
-                <h3>Robin Renucci</h3>
-                <p>Licensed therapist</p>
-              </div>
-            </article>
-            <article class="profile-card">
-              <div class="profile-photo photo-three"></div>
-              <div class="profile-info">
-                <h3>Ben Hummell</h3>
-                <p>Clinical therapist</p>
-              </div>
-            </article>
-          </div>
+      <section class="panel chart-panel">
+        <div class="panel-header">Landing vs Bookings</div>
+        <div class="panel-body">
+          <div id="chartWrap" class="chart-wrap"></div>
         </div>
       </section>
+    </div>
 
-      <section id="faq" class="section-shell faq-section" data-track-section="faq">
-        <div class="container faq-wrap">
-          <div class="section-heading">
-            <p class="eyebrow dark">Frequently Asked Questions</p>
-            <h2>Answers to help you feel confident.</h2>
+    <script>
+      const STORAGE_KEY = 'websiteTrackingEvents';
+      const REDIRECT_STORAGE_KEY = 'redirectLandingVisits';
+
+      function getEvents() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function getRedirectLandingStats() {
+        try {
+          return JSON.parse(localStorage.getItem(REDIRECT_STORAGE_KEY) || '{}');
+        } catch (error) {
+          return {};
+        }
+      }
+
+      function getDateFilter() {
+        const fromField = document.getElementById('dateFrom');
+        const toField = document.getElementById('dateTo');
+        return {
+          from: fromField ? fromField.value : '',
+          to: toField ? toField.value : ''
+        };
+      }
+
+      function filterEventsByDate(events) {
+        const { from, to } = getDateFilter();
+        if (!from && !to) return events;
+
+        return events.filter((event) => {
+          if (!event.timestamp) return true;
+
+          const eventDate = new Date(event.timestamp);
+          const fromDate = from ? new Date(`${from}T00:00:00`) : null;
+          const toDate = to ? new Date(`${to}T23:59:59`) : null;
+
+          if (fromDate && eventDate < fromDate) return false;
+          if (toDate && eventDate > toDate) return false;
+          return true;
+        });
+      }
+
+      function clearDateFilter() {
+        const fromField = document.getElementById('dateFrom');
+        const toField = document.getElementById('dateTo');
+        if (fromField) fromField.value = '';
+        if (toField) toField.value = '';
+        renderDashboard();
+      }
+
+      function renderDashboard() {
+        const events = filterEventsByDate(getEvents());
+        const redirectStats = getRedirectLandingStats();
+
+        const totalEvents = events.length;
+        const pageViews = events.filter((event) => event.eventName === 'page_view').length;
+        const clicks = events.filter((event) => event.eventName === 'cta_click').length;
+        const formSubmits = events.filter((event) => event.eventName === 'form_submit').length;
+        const bookedAppointments = events.filter((event) => event.eventName === 'book_appointment').length;
+        const redirectVisits = Object.values(redirectStats).reduce((sum, item) => sum + (item.total || 0), 0);
+        const uniqueUsers = new Set(events.map((event) => event.userId).filter(Boolean)).size;
+        const overallConversionRate = pageViews > 0 ? (bookedAppointments / pageViews) * 100 : 0;
+        const redirectConversionRate = redirectVisits > 0 ? (bookedAppointments / redirectVisits) * 100 : 0;
+
+        const therapistSummary = events
+          .filter((event) => event.eventName === 'book_appointment')
+          .reduce((acc, event) => {
+            const therapistName = event.therapist || 'Unknown therapist';
+            acc[therapistName] = (acc[therapistName] || 0) + 1;
+            return acc;
+          }, {});
+
+        const clickSourceSummary = events
+          .filter((event) => event.eventName === 'cta_click' || event.eventName === 'outbound_click')
+          .reduce((acc, event) => {
+            const source = event.source || 'direct';
+            acc[source] = (acc[source] || 0) + 1;
+            return acc;
+          }, {});
+
+        const sourceTrafficSummary = events
+          .filter((event) => event.eventName === 'page_view' || event.eventName === 'cta_click')
+          .reduce((acc, event) => {
+            const source = event.source || 'direct';
+            acc[source] = (acc[source] || 0) + 1;
+            return acc;
+          }, {});
+
+        const bookingsBySource = events
+          .filter((event) => event.eventName === 'book_appointment')
+          .reduce((acc, event) => {
+            const source = event.source || 'direct';
+            acc[source] = (acc[source] || 0) + 1;
+            return acc;
+          }, {});
+
+        const sourceConversionSummary = Object.entries(sourceTrafficSummary).reduce((acc, [source, traffic]) => {
+          const bookings = bookingsBySource[source] || 0;
+          acc[source] = traffic > 0 ? (bookings / traffic) * 100 : 0;
+          return acc;
+        }, {});
+
+        const mouseSet = events.filter((event) => event.eventName === 'mouse_move');
+        const mouseHotspots = mouseSet.reduce((acc, event) => {
+          const key = `${Math.round((event.x || 0) / 100) * 100},${Math.round((event.y || 0) / 100) * 100}`;
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {});
+
+        const hoverHotspots = events
+          .filter((event) => event.eventName === 'hover_heatmap')
+          .reduce((acc, event) => {
+            const key = event.element || 'unknown';
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+          }, {});
+
+        const statsGrid = document.getElementById('statsGrid');
+        statsGrid.innerHTML = `
+          <div class="stat-card">
+            <span class="stat-label">Total events</span>
+            <div class="stat-value">${totalEvents}</div>
           </div>
-
-          <div class="faq-list">
-            <div class="faq-item">
-              <h3>What is TMatch?</h3>
-              <p>TMatch is a client-facing therapist matching platform that helps you discover care with the guidance of Tracy, an AI case manager.</p>
-            </div>
-            <div class="faq-item">
-              <h3>Is TMatch free to use?</h3>
-              <p>Yes. It is free for clients to talk with Tracy, review therapist matches, and browse provider profiles.</p>
-            </div>
-            <div class="faq-item">
-              <h3>Is Tracy an AI or a real person?</h3>
-              <p>Tracy is an AI case manager designed to understand your needs and help identify therapists who fit.</p>
-            </div>
-            <div class="faq-item">
-              <h3>Does TMatch accept insurance?</h3>
-              <p>TMatch helps you narrow matches based on insurance preference, but coverage is confirmed directly with the therapist.</p>
-            </div>
+          <div class="stat-card">
+            <span class="stat-label">Page views</span>
+            <div class="stat-value">${pageViews}</div>
           </div>
-        </div>
-      </section>
-    </main>
-
-    <footer id="contact" class="site-footer">
-      <div class="container footer-wrap">
-        <div class="footer-brand">
-          <div class="brand footer-logo" data-track="footer_brand">TMatch</div>
-          <p>TMatch is not a crisis service. If you are in immediate danger, please call 911 or 988.</p>
-        </div>
-
-        <div class="footer-links">
-          <div>
-            <h4>Find care</h4>
-            <a href="#" data-track="footer_find_care">Therapists</a>
-            <a href="#" data-track="footer_psychiatrists">Psychiatrists</a>
+          <div class="stat-card">
+            <span class="stat-label">CTA clicks</span>
+            <div class="stat-value">${clicks}</div>
           </div>
-          <div>
-            <h4>For providers</h4>
-            <a href="#" data-track="footer_provider_join">Join as a Provider</a>
-            <a href="#" data-track="footer_provider_portal">Provider Portal</a>
+          <div class="stat-card">
+            <span class="stat-label">Form submits</span>
+            <div class="stat-value">${formSubmits}</div>
           </div>
-          <div>
-            <h4>About us</h4>
-            <a href="#" data-track="footer_about">About TMatch</a>
-            <a href="#" data-track="footer_blog">Blog</a>
+          <div class="stat-card">
+            <span class="stat-label">Booked</span>
+            <div class="stat-value">${bookedAppointments}</div>
           </div>
-        </div>
-      </div>
+          <div class="stat-card">
+            <span class="stat-label">Mouse moves</span>
+            <div class="stat-value">${mouseSet.length}</div>
+          </div>
+        `;
 
-      <div class="container legal-row">
-        <span>© 2026 Tmind AI Inc. All rights reserved.</span>
-        <div class="legal-links">
-          <a href="#" data-track="legal_privacy">Privacy Policy</a>
-          <a href="#" data-track="legal_terms">Terms of Service</a>
-          <a href="#" data-track="legal_hipaa">HIPAA Practices</a>
-        </div>
-      </div>
-    </footer>
+        const eventTableBody = document.getElementById('eventTableBody');
+        eventTableBody.innerHTML = events.slice(-10).reverse().map((event) => `
+          <tr>
+            <td>${event.eventName}</td>
+            <td>${event.page || '/'}</td>
+            <td>${new Date(event.timestamp).toLocaleString()}</td>
+            <td>${event.userId || 'anonymous'}</td>
+          </tr>
+        `).join('');
 
-    <script src="tracking.js"></script>
+        const totals = events.reduce((acc, event) => {
+          acc[event.eventName] = (acc[event.eventName] || 0) + 1;
+          return acc;
+        }, {});
+
+        const eventTotals = document.getElementById('eventTotals');
+        const redirectSources = Object.entries(redirectStats).reduce((acc, [page, pageData]) => {
+          Object.entries(pageData.sources || {}).forEach(([source, count]) => {
+            acc[source] = (acc[source] || 0) + count;
+          });
+          return acc;
+        }, {});
+
+        const summaryChips = [
+          ...Object.entries(totals)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, count]) => `<span class="chip">${name}: ${count}</span>`),
+          ...Object.entries(redirectSources)
+            .map(([source, count]) => `<span class="chip">redirect:${source}: ${count}</span>`)
+        ];
+
+        eventTotals.innerHTML = summaryChips.join('');
+
+        const therapistBreakdown = document.getElementById('therapistBreakdown');
+        therapistBreakdown.innerHTML = Object.entries(therapistSummary)
+          .sort((a, b) => b[1] - a[1])
+          .map(([therapist, count]) => `<span class="chip">${therapist}: ${count}</span>`)
+          .join('') || '<span class="chip">No bookings yet</span>';
+
+        const sourceBreakdown = document.getElementById('sourceBreakdown');
+        sourceBreakdown.innerHTML = Object.entries(clickSourceSummary)
+          .sort((a, b) => b[1] - a[1])
+          .map(([source, count]) => `<span class="chip">${source}: ${count}</span>`)
+          .join('') || '<span class="chip">No click sources yet</span>';
+
+        const sourceConversionBreakdown = document.getElementById('sourceConversionBreakdown');
+        sourceConversionBreakdown.innerHTML = Object.entries(sourceConversionSummary)
+          .sort((a, b) => b[1] - a[1])
+          .map(([source, rate]) => `<span class="chip">${source}: ${rate.toFixed(1)}%</span>`)
+          .join('') || '<span class="chip">No conversion data yet</span>';
+
+        const overallConversion = document.getElementById('overallConversion');
+        overallConversion.innerHTML = `
+          <span class="chip">Overall: ${overallConversionRate.toFixed(1)}%</span>
+          <span class="chip">Redirect: ${redirectConversionRate.toFixed(1)}%</span>
+          <span class="chip">Unique users: ${uniqueUsers}</span>
+        `;
+
+        const mouseMovementSummary = document.getElementById('mouseMovementSummary');
+        mouseMovementSummary.innerHTML = Object.entries(mouseHotspots)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 6)
+          .map(([pos, count]) => `<span class="chip">${pos}: ${count}</span>`)
+          .join('') || '<span class="chip">No mouse movement yet</span>';
+
+        const hoverHeatmapSummary = document.getElementById('hoverHeatmapSummary');
+        hoverHeatmapSummary.innerHTML = Object.entries(hoverHotspots)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 6)
+          .map(([element, count]) => `<span class="chip">${element}: ${count}</span>`)
+          .join('') || '<span class="chip">No hover data yet</span>';
+
+        const chartWrap = document.getElementById('chartWrap');
+        const maxValue = Math.max(1, redirectVisits, bookedAppointments);
+
+        chartWrap.innerHTML = `
+          <div class="bar-group">
+            <div class="bar" style="height: ${(redirectVisits / maxValue) * 100}%"></div>
+            <div class="bar-label">Redirects</div>
+            <div class="bar-label">${redirectVisits}</div>
+          </div>
+          <div class="bar-group">
+            <div class="bar alt" style="height: ${(bookedAppointments / maxValue) * 100}%"></div>
+            <div class="bar-label">Bookings</div>
+            <div class="bar-label">${bookedAppointments}</div>
+          </div>
+        `;
+      }
+
+      const dateFrom = document.getElementById('dateFrom');
+      const dateTo = document.getElementById('dateTo');
+      if (dateFrom) {
+        dateFrom.addEventListener('change', renderDashboard);
+      }
+      if (dateTo) {
+        dateTo.addEventListener('change', renderDashboard);
+      }
+
+      renderDashboard();
+      window.clearDateFilter = clearDateFilter;
+    </script>
   </body>
 </html>

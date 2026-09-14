@@ -1,6 +1,38 @@
 const STORAGE_KEY = 'websiteTrackingEvents';
 const REDIRECT_STORAGE_KEY = 'redirectLandingVisits';
+const USER_ID_STORAGE_KEY = 'websiteTrackingUserId';
+const SESSION_START_STORAGE_KEY = 'websiteTrackingSessionStart';
 const MAX_EVENTS = 200;
+
+function getUserId() {
+  try {
+    let userId = localStorage.getItem(USER_ID_STORAGE_KEY);
+    if (!userId) {
+      userId = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : `user_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      localStorage.setItem(USER_ID_STORAGE_KEY, userId);
+    }
+    return userId;
+  } catch (error) {
+    return 'anonymous';
+  }
+}
+
+function getPageSource() {
+  const urlSource = new URLSearchParams(window.location.search).get('source');
+  if (urlSource) return urlSource;
+
+  const referrer = document.referrer || '';
+  if (!referrer) return 'direct';
+
+  try {
+    const parsed = new URL(referrer);
+    if (parsed.pathname.includes('redirect-test')) return 'redirect';
+  } catch (error) {
+    // Ignore invalid URLs
+  }
+
+  return 'direct';
+}
 
 function getStoredEvents() {
   try {
@@ -15,6 +47,14 @@ function getRedirectLandingStats() {
     return JSON.parse(localStorage.getItem(REDIRECT_STORAGE_KEY) || '{}');
   } catch (error) {
     return {};
+  }
+}
+
+function getSessionStart() {
+  try {
+    return Number(localStorage.getItem(SESSION_START_STORAGE_KEY) || Date.now());
+  } catch (error) {
+    return Date.now();
   }
 }
 
@@ -34,6 +74,8 @@ function trackEvent(eventName, payload = {}) {
   const eventData = {
     eventName,
     page: window.location.pathname,
+    source: getPageSource(),
+    userId: getUserId(),
     timestamp: new Date().toISOString(),
     ...payload,
   };
@@ -47,6 +89,8 @@ function trackEvent(eventName, payload = {}) {
 
 window.trackEvent = trackEvent;
 window.recordLandingVisit = recordLandingVisit;
+window.getUserId = getUserId;
+window.getPageSource = getPageSource;
 
 function bindClickTracking() {
   document.querySelectorAll('[data-track]').forEach((element) => {
@@ -54,6 +98,7 @@ function bindClickTracking() {
       trackEvent('cta_click', {
         label: element.dataset.track,
         text: element.textContent.trim(),
+        source: getPageSource(),
       });
     });
   });
@@ -169,32 +214,86 @@ function bindFormTracking() {
   });
 }
 
+function bindMouseTracking() {
+  let lastMoveAt = 0;
+
+  document.addEventListener('mousemove', (event) => {
+    const now = Date.now();
+    if (now - lastMoveAt < 150) return;
+
+    lastMoveAt = now;
+    trackEvent('mouse_move', {
+      x: Math.round(event.clientX),
+      y: Math.round(event.clientY),
+      source: getPageSource(),
+    });
+  }, { passive: true });
+}
+
+function bindHoverTracking() {
+  let lastHoverAt = 0;
+
+  document.addEventListener('mouseover', (event) => {
+    const now = Date.now();
+    if (now - lastHoverAt < 250) return;
+
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const trackedTarget = target.closest('[data-track]') || target.closest('[data-track-section]') || target;
+    const elementName = trackedTarget?.dataset?.track || trackedTarget?.dataset?.trackSection || trackedTarget?.tagName?.toLowerCase() || 'unknown';
+
+    lastHoverAt = now;
+    trackEvent('hover_heatmap', {
+      element: elementName,
+      x: Math.round(event.clientX),
+      y: Math.round(event.clientY),
+      text: (trackedTarget?.textContent || '').trim().slice(0, 60),
+      source: getPageSource(),
+    });
+  }, { passive: true });
+}
+
 function bindExitTracking() {
   window.addEventListener('beforeunload', () => {
+    const startedAt = getSessionStart();
+    const durationMs = Math.max(0, Date.now() - startedAt);
+
     trackEvent('page_exit', {
       scrollY: window.scrollY,
       path: window.location.pathname,
+    });
+
+    trackEvent('time_on_site', {
+      duration_ms: durationMs,
+      source: getPageSource(),
     });
   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const currentPath = window.location.pathname;
+  const currentSource = getPageSource();
   const isRedirectPage = currentPath.endsWith('/redirect-test.html') || currentPath.endsWith('redirect-test.html');
 
+  if (!localStorage.getItem(SESSION_START_STORAGE_KEY)) {
+    localStorage.setItem(SESSION_START_STORAGE_KEY, Date.now().toString());
+  }
+
   if (isRedirectPage) {
-    const source = new URLSearchParams(window.location.search).get('source') || 'direct';
-    recordLandingVisit('redirect-test', source);
+    recordLandingVisit('redirect-test', currentSource);
   }
 
   trackEvent('page_view', {
     title: document.title,
-    source: new URLSearchParams(window.location.search).get('source') || 'direct',
+    source: currentSource,
   });
 
   bindClickTracking();
   bindOutboundTracking();
   bindScrollTracking();
   bindFormTracking();
+  bindMouseTracking();
+  bindHoverTracking();
   bindExitTracking();
 });
